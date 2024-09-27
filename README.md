@@ -18,7 +18,13 @@
 ![Phi-3.5](https://img.shields.io/badge/Model-Phi--3-green)
 ![Phi-3.5](https://img.shields.io/badge/Model-Phi--3.5-green) 
 
-This codebase provides a Pytorch implementation for FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows". 
+<p align="center">
+    <img src="./assets/logo_2.png" width="30%"> <br>
+</p>
+
+This is the codebase for [FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows"](TBD). 
+
+
 
 ✨ FaithEval is a new and comprehensive benchmark dedicated to evaluating contextual faithfulness in LLMs across three diverse tasks: unanswerable, inconsistent, and counterfactual contexts.
 
