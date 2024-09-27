@@ -1,4 +1,6 @@
-# FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows"
+# <img src="assets/logo.png" alt="FaithEval" width="23"/>FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows"
+
+
 
 ![faitheval](https://img.shields.io/badge/Dataset-FaithEval-blue) 
 ![unanswerable](https://img.shields.io/badge/Task-Unanswerable_QA-red) 
