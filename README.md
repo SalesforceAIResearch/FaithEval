@@ -81,6 +81,10 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
  
 ## Quick Start 
 
+## Remarks 
+
+This evaluation was conducted for research only purposes. Users need to make their own assessment regarding any obligations or responsibilities under the corresponding licenses or terms and conditions pertaining to the original datasets and data.
+
 ## Citation
 
 If you find our project helpful, please consider citing our paper :blush:
