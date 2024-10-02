@@ -22,7 +22,7 @@
     <img src="./assets/logo_2.png" width="30%"> <br>
 </p>
 
-This is the codebase for [FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows"](TBD). 
+This is the codebase for [FaithEval: Can Your Language Model Stay Faithful to Context, Even If "The Moon is Made of Marshmallows"](https://drive.google.com/file/d/1oklAhbWMpMxu7HosZgXaDyUJlSZgkMfi/view). 
 
 
 
