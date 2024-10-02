@@ -68,8 +68,6 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
 - [TextbookQA](https://prior.allenai.org/projects/tqa) 
 - [ARC-Challenge](https://huggingface.co/datasets/allenai/ai2_arc)
 
-## 🏆 Leaderboard 
-
 
 ## 📊 Model Performance Summary
 - Unanswerable Context
@@ -80,6 +78,7 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
  ![Summary](./assets/model_performance_cc.png)
  
 ## Quick Start 
+To be updated soon. 
 
 ## Remarks 
 
