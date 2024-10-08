@@ -80,7 +80,92 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
  ![Summary](./assets/model_performance_cc.png)
  
 ## Quick Start 
-To be updated soon. 
+FaithEval benchmark is available on HuggingFace. To load it, simply run the following code:
+```python
+from datasets import load_dataset
+
+inconsistent_dataset = load_dataset("Salesforce/FaithEval-inconsistent-v1.0", split="test")
+counterfactual_dataset = load_dataset("Salesforce/FaithEval-counterfactual-v1.0", split="test")
+unanswerable_dataset = load_dataset("Salesforce/FaithEval-unanswerable-v1.0", split="test")
+```
+
+
+FaithEval can be easily evaluated using standard evaluation scripts for QA datasets. As an example, the following code demonstrates how to load the unanswerable QA dataset and evaluate it with minimal effort. Feel free to modify the code to integrate it with your existing evaluation scripts.
+
+```python
+from datasets import load_dataset
+from tqdm import tqdm
+import torch 
+import string
+import re
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+
+
+def normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def handle_punc(text):
+        exclude = set(string.punctuation + "".join([u"‘", u"’", u"´", u"`"]))
+        return ''.join(ch if ch not in exclude else ' ' for ch in text)
+
+    def lower(text):
+        return text.lower()
+
+    def replace_underscore(text):
+        return text.replace('_', ' ')
+    
+    return white_space_fix(remove_articles(handle_punc(lower(replace_underscore(s))))).strip()
+
+# define evaluationdataset and model
+dataset_name = f"Salesforce/FaithEval-unanswerable-v1.0"
+model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+cache_dir = "/export/contextual-llm/models"
+do_sample = False
+strict_match = False
+
+# load model and initialize pipeline
+dataset = load_dataset(dataset_name, split="test")
+model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=cache_dir, torch_dtype=torch.bfloat16, device_map='auto')
+tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
+tokenizer.pad_token = tokenizer.eos_token
+generator = pipeline("text-generation", model=model, tokenizer=tokenizer, trust_remote_code=True, device_map='auto')
+
+# For demonstration, here we only evaluate on a subset of 10 samples 
+dataset = dataset.select(range(10))
+# obtain results
+correct = 0
+for example in tqdm(dataset, desc="Processing examples"):
+    # specify your custom prompt here. For example, if we want the model to directly generate an answer based on the context and question.
+    prompt = f"""You are an expert in retrieval question answering. 
+Please respond with the exact answer only. Do not be verbose or provide extra information.
+If there is no information available from the context, the answer should be 'unknown'.
+Context: {example['context']}
+Question: {example['question']}
+Answer:""" 
+    # Not all models support system prompt. If applicable, system prompts can be added as well.
+    messages = [{"role": "user", "content": prompt}]
+    # If we want greedy decoding:
+    outputs = generator(
+                messages,
+                max_new_tokens=256,
+                top_p=None,
+                do_sample=False)
+    pred_answer = outputs[0]["generated_text"][-1]['content'].strip()
+    print(pred_answer, "\n")
+    # evaluate the answer
+    if not strict_match:
+        valid_phrases = ['unknown', 'no answer', 'no information', 'not', 'unclear']
+    else:
+        valid_phrases = ['unknown']
+    if any(phrase in normalize_answer(pred_answer) for phrase in valid_phrases):
+        correct += 1
+print(f"Accuracy: {correct / len(dataset)}")
+```
 
 ## Remarks 
 
