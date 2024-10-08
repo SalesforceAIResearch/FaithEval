@@ -79,6 +79,9 @@ The unanswerable, inconsistent, and counterfactual contexts are synthesized or m
  ![Summary](./assets/model_performance_ic.png)
 - Counterfactual Context
  ![Summary](./assets/model_performance_cc.png)
+
+Columns are sorted by performance on the original QA. Proprietary model
+names are highlighted in orange.
  
 ## Quick Start 
 FaithEval benchmark is available on HuggingFace. To load it, simply run the following code:
