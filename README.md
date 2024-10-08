@@ -57,7 +57,8 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
 ## 🧩 Task Construction and Validation Pipeline 
 ![Summary](./assets/pipeline.png)
 
-**Source Datasets:**
+**Source Datasets.**
+The unanswerable, inconsistent, and counterfactual contexts are synthesized or modified based on a wide range of popular academic QA datasets as follows: 
 - [SQuAD](https://arxiv.org/abs/1606.05250) 
 - [NewsQA](https://arxiv.org/abs/1611.09830) 
 - [TriviaQA](https://arxiv.org/abs/1705.03551)
