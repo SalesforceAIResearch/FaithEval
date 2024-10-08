@@ -121,7 +121,7 @@ def normalize_answer(s):
     
     return white_space_fix(remove_articles(handle_punc(lower(replace_underscore(s))))).strip()
 
-# define evaluationdataset and model
+# specify dataset and model name 
 dataset_name = f"Salesforce/FaithEval-unanswerable-v1.0"
 model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 cache_dir = "/export/contextual-llm/models"
@@ -137,7 +137,7 @@ generator = pipeline("text-generation", model=model, tokenizer=tokenizer, trust_
 
 # For demonstration, here we only evaluate on a subset of 10 samples 
 dataset = dataset.select(range(10))
-# obtain results
+
 correct = 0
 for example in tqdm(dataset, desc="Processing examples"):
     # specify your custom prompt here. For example, if we want the model to directly generate an answer based on the context and question.
@@ -166,6 +166,8 @@ Answer:"""
         correct += 1
 print(f"Accuracy: {correct / len(dataset)}")
 ```
+
+The full evaluation script for all tasks will also be released soon. 
 
 ## Remarks 
 
