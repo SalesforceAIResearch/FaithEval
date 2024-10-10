@@ -109,7 +109,7 @@ import re
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 ```
 
-In the mini-example below, we only need one normalization function thats compare the predicted answers with the ground truth:
+In the mini-example below, we only need one normalization function that compares the predicted answers with the ground truth:
 ```python
 def normalize_answer(s):
     """Lower text and remove punctuation, articles and extra whitespace."""
