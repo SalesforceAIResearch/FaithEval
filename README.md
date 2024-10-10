@@ -54,6 +54,16 @@ Ensuring faithfulness to context in **large language models (LLMs)** and **retri
 
 </details>
 
+###  How to load HuggingFace datasets
+All tasks from FaithEval can be loaded from [Huggingface](https://huggingface.co/collections/Salesforce/faitheval-benchmark-66ff102cda291ca0875212d4):
+```python
+from datasets import load_dataset
+
+inconsistent_dataset = load_dataset("Salesforce/FaithEval-inconsistent-v1.0", split="test")
+counterfactual_dataset = load_dataset("Salesforce/FaithEval-counterfactual-v1.0", split="test")
+unanswerable_dataset = load_dataset("Salesforce/FaithEval-unanswerable-v1.0", split="test")
+```
+
 ## 🧩 Task Construction and Validation Pipeline 
 ![Summary](./assets/pipeline.png)
 
@@ -82,19 +92,13 @@ The unanswerable, inconsistent, and counterfactual contexts are synthesized or m
 
 Columns are sorted by performance on the original QA. Proprietary model
 names are highlighted in orange.
- 
-## Quick Start 
-FaithEval benchmark is available on HuggingFace. To load it, simply run the following code:
-```python
-from datasets import load_dataset
-
-inconsistent_dataset = load_dataset("Salesforce/FaithEval-inconsistent-v1.0", split="test")
-counterfactual_dataset = load_dataset("Salesforce/FaithEval-counterfactual-v1.0", split="test")
-unanswerable_dataset = load_dataset("Salesforce/FaithEval-unanswerable-v1.0", split="test")
-```
 
 
-FaithEval can be easily evaluated using standard evaluation scripts for QA datasets. As an example, the following code demonstrates how to load the unanswerable QA dataset and evaluate it with minimal effort. Feel free to modify the code to integrate it with your existing evaluation scripts.
+## 🚀 Quick Start 
+
+FaithEval can be easily evaluated using standard evaluation scripts for QA datasets. As an example, the following code demonstrates how to load the dataset and evaluate it with minimal effort. Feel free to modify the code to integrate it with your existing evaluation scripts.
+
+We first load the following dependencies:
 
 ```python
 from datasets import load_dataset
@@ -103,8 +107,10 @@ import torch
 import string
 import re
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+```
 
-
+In the mini-example below, we only need one normalization function thats compare the predicted answers with the ground truth:
+```python
 def normalize_answer(s):
     """Lower text and remove punctuation, articles and extra whitespace."""
     def remove_articles(text):
@@ -124,22 +130,46 @@ def normalize_answer(s):
         return text.replace('_', ' ')
     
     return white_space_fix(remove_articles(handle_punc(lower(replace_underscore(s))))).strip()
+```
 
+Suppose we want to evaluate Llama-3.1-8B-Instruct. We first load the model and initialize the pipeline:
+```python
 # specify dataset and model name 
-dataset_name = f"Salesforce/FaithEval-unanswerable-v1.0"
 model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 cache_dir = "/export/contextual-llm/models"
 do_sample = False
-strict_match = False
 
 # load model and initialize pipeline
-dataset = load_dataset(dataset_name, split="test")
 model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=cache_dir, torch_dtype=torch.bfloat16, device_map='auto')
 tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)
 tokenizer.pad_token = tokenizer.eos_token
 generator = pipeline("text-generation", model=model, tokenizer=tokenizer, trust_remote_code=True, device_map='auto')
+```
+If the target task is Unanswerable Context, we can load the dataset and specify the groundtruth valid phrases and the task-specific prompt:
+```python
+strict_match = False
+dataset_name = f"Salesforce/FaithEval-unanswerable-v1.0"
+dataset = load_dataset(dataset_name, split="test")
+if not strict_match:
+    valid_phrases = ['unknown', 'no answer', 'no information', 'not', 'unclear']
+else:
+    valid_phrases = ['unknown']
+task_specific_prompt = "If there is no information available from the context, the answer should be 'unknown'. "
+```
+Similarly, if our target task is Inconsistent Context: 
+```python
+strict_match = False
+dataset_name = f"Salesforce/FaithEval-inconsistent-v1.0"
+dataset = load_dataset(dataset_name, split="test")
+if not strict_match:
+    valid_phrases = ['conflict', 'multiple answers', 'disagreement', 'inconsistent', 'contradictory', 'contradiction', 'inconsistency', 'two answers', '2 answers', 'conflicting']
+else: 
+    valid_phrases = ['conflict']
+task_specific_prompt = "If there is conflict information or multiple answers from the context, the answer should be 'conflict'."
+```
 
-# For demonstration, here we only evaluate on a subset of 10 samples 
+For demonstration, here we only evaluate on a subset of 10 samples: 
+```python
 dataset = dataset.select(range(10))
 
 correct = 0
@@ -147,7 +177,7 @@ for example in tqdm(dataset, desc="Processing examples"):
     # specify your custom prompt here. For example, if we want the model to directly generate an answer based on the context and question.
     prompt = f"""You are an expert in retrieval question answering. 
 Please respond with the exact answer only. Do not be verbose or provide extra information.
-If there is no information available from the context, the answer should be 'unknown'.
+{task_specific_prompt}
 Context: {example['context']}
 Question: {example['question']}
 Answer:""" 
@@ -162,10 +192,6 @@ Answer:"""
     pred_answer = outputs[0]["generated_text"][-1]['content'].strip()
     print(pred_answer, "\n")
     # evaluate the answer
-    if not strict_match:
-        valid_phrases = ['unknown', 'no answer', 'no information', 'not', 'unclear']
-    else:
-        valid_phrases = ['unknown']
     if any(phrase in normalize_answer(pred_answer) for phrase in valid_phrases):
         correct += 1
 print(f"Accuracy: {correct / len(dataset)}")
